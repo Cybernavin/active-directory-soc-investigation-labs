@@ -1,0 +1,7 @@
+index=AD-DC-01 EventCode=7045
+| rex field=_raw "Data Name='ServiceName'>(?<ServiceName>[^<]+)"
+| rex field=_raw "Data Name='ImagePath'>(?<ImagePath>[^<]+)"
+| rex field=_raw "Data Name='ServiceType'>(?<ServiceType>[^<]+)"
+| rex field=_raw "Data Name='StartType'>(?<StartType>[^<]+)"
+| table _time host ServiceName ImagePath ServiceType StartType _raw
+| sort - _time

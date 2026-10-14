@@ -1,0 +1,7 @@
+index=AD-DC-01 EventCode=4624
+| rex field=_raw "Data Name='TargetUserName'>(?<TargetUserName>[^<]+)"
+| rex field=_raw "Data Name='IpAddress'>(?<SourceIP>[^<]+)"
+| rex field=_raw "Data Name='LogonType'>(?<LogonType>[^<]+)"
+| where LogonType="10"
+| table _time host TargetUserName SourceIP LogonType _raw
+| sort - _time

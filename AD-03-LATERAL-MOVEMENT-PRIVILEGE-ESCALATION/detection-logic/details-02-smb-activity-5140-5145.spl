@@ -1,0 +1,9 @@
+index=AD-DC-01 (EventCode=5140 OR EventCode=5145)
+| rex field=_raw "Data Name='SubjectUserName'>(?<User>[^<]+)"
+| rex field=_raw "Data Name='IpAddress'>(?<SourceIP>[^<]+)"
+| rex field=_raw "Data Name='ShareName'>(?<ShareName>[^<]+)"
+| rex field=_raw "Data Name='RelativeTargetName'>(?<RelativeTargetName>[^<]+)"
+| where isnotnull(User)
+| where NOT like(User,"%$")
+| table _time host EventCode User SourceIP ShareName RelativeTargetName _raw
+| sort - _time

@@ -1,0 +1,30 @@
+(index=AD-DC-01 OR index=main)
+(EventCode=4624 OR EventCode=4648 OR EventCode=5140 OR EventCode=5145 OR EventCode=7045)
+| rex field=_raw "Data Name='IpAddress'>(?<SourceIP>[^<]+)"
+| rex field=_raw "Data Name='TargetUserName'>(?<TargetUser>[^<]+)"
+| rex field=_raw "Data Name='SubjectUserName'>(?<SubjectUser>[^<]+)"
+| rex field=_raw "Data Name='LogonType'>(?<LogonType>[^<]+)"
+| eval User=coalesce(TargetUser,SubjectUser)
+| where NOT like(User,"%$")
+| where SourceIP!="::1"
+| where NOT like(SourceIP,"fe80:%")
+| eval Activity=case(
+    EventCode=4624 AND LogonType="10","RDP Logon",
+    EventCode=4624 AND LogonType="3","Network Logon",
+    EventCode=4648,"Explicit Credential Use",
+    EventCode=5140,"SMB Access",
+    EventCode=5145,"SMB Share Access",
+    EventCode=7045,"Remote Service",
+    true(),"Other"
+)
+| eval Risk=case(
+    EventCode=7045,"High",
+    EventCode=4648,"High",
+    EventCode=4624 AND LogonType="10","High",
+    EventCode=4624 AND LogonType="3","Medium",
+    EventCode=5140 OR EventCode=5145,"Medium",
+    true(),"Low"
+)
+| where Activity!="Other"
+| table _time SourceIP host User Activity Risk
+| sort - _time

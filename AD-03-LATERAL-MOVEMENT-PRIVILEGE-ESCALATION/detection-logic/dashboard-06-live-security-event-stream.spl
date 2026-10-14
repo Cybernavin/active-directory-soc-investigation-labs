@@ -1,0 +1,24 @@
+(index=AD-DC-01 OR index=main)
+(EventCode=4624 OR EventCode=4648 OR EventCode=4672 OR EventCode=5140 OR EventCode=5145 OR EventCode=7045)
+| rex field=_raw "Data Name='SubjectUserName'>(?<User>[^<]+)"
+| rex field=_raw "Data Name='TargetUserName'>(?<TargetUser>[^<]+)"
+| rex field=_raw "Data Name='IpAddress'>(?<SourceIP>[^<]+)"
+| rex field=_raw "Data Name='LogonType'>(?<LogonType>[^<]+)"
+| where isnotnull(User) OR isnotnull(TargetUser)
+| eval DisplayUser=coalesce(TargetUser,User)
+| where NOT like(DisplayUser,"%$")
+| where SourceIP!="::1"
+| where SourceIP!="127.0.0.1"
+| where NOT like(SourceIP,"fe80:%")
+| eval EventType=case(
+    EventCode=4624 AND LogonType="10","RDP Logon",
+    EventCode=4624 AND LogonType="3","Network Logon",
+    EventCode=4648,"Explicit Credential Use",
+    EventCode=4672,"Special Privileges",
+    EventCode=5140,"SMB Access",
+    EventCode=5145,"SMB Share Access",
+    EventCode=7045,"Remote Service",
+    true(),"Other"
+)
+| table _time EventCode EventType User TargetUser SourceIP host
+| sort - _time

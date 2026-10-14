@@ -1,0 +1,2 @@
+index=AD-DC-01 EventCode=7045
+| stats count

@@ -1,0 +1,14 @@
+index=AD-DC-01 host=DC01
+(EventCode=4662 OR EventCode=4672 OR EventCode=4624 OR EventCode=4648)
+| rex field=_raw "Data Name='SubjectUserName'>(?<User>[^<]+)"
+| rex field=_raw "Data Name='TargetUserName'>(?<TargetUser>[^<]+)"
+| rex field=_raw "Data Name='IpAddress'>(?<SourceIP>[^<]+)"
+| eval EventType=case(
+    EventCode=4662,"DCSync / Directory Access",
+    EventCode=4672,"Special Privileges",
+    EventCode=4624,"Successful Logon",
+    EventCode=4648,"Explicit Credential Logon",
+    true(),"Other"
+)
+| table _time EventCode EventType User TargetUser SourceIP host
+| sort - _time

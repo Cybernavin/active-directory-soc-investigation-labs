@@ -1,0 +1,5 @@
+index=AD-DC-01 host=DC01 EventCode=4672
+| rex field=_raw "Data Name='SubjectUserName'>(?<User>[^<]+)"
+| where isnotnull(User)
+| where NOT like(User,"%$")
+| stats count

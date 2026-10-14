@@ -1,0 +1,10 @@
+# Details: Pre-Auth Failures (4771)
+index=AD-DC-01 host=DC01 EventCode=4771
+| rex field=_raw "Data Name='TargetUserName'>(?<User>[^<]+)"
+| rex field=_raw "Data Name='IpAddress'>(?<SourceIP>[^<]+)"
+| rex field=_raw "Data Name='Status'>(?<Status>[^<]+)"
+| where isnotnull(User)
+| where NOT like(User,"%$$@CORP.LOCAL")
+| where SourceIP!="::1"
+| table _time User SourceIP Status host
+| sort - _time

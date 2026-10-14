@@ -1,0 +1,4 @@
+index=main EventCode=10
+| rex field=_raw "Name='TargetImage'>(?<TargetImage>[^<]+)"
+| search TargetImage="*lsass.exe"
+| stats count

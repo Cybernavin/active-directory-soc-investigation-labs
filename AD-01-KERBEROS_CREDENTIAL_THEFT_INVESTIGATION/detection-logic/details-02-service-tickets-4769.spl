@@ -1,0 +1,12 @@
+# Details: Service Tickets (4769)
+index=AD-DC-01 host=DC01 EventCode=4769
+| rex field=_raw "Data Name='TargetUserName'>(?<User>[^<]+)"
+| rex field=_raw "Data Name='ServiceName'>(?<ServiceName>[^<]+)"
+| rex field=_raw "Data Name='TicketEncryptionType'>(?<EncryptionType>[^<]+)"
+| rex field=_raw "Data Name='IpAddress'>(?<SourceIP>[^<]+)"
+| where isnotnull(User) AND isnotnull(ServiceName)
+| where NOT like(User,"%$$@CORP.LOCAL")
+| where SourceIP!="::1" AND ServiceName!="krbtgt"
+| where NOT like(ServiceName,"%$$")
+| table _time User ServiceName EncryptionType SourceIP host
+| sort - _time

@@ -1,0 +1,20 @@
+index=main EventCode=10
+| rex field=_raw "Name='SourceImage'>(?<SourceImage>[^<]+)"
+| rex field=_raw "Name='TargetImage'>(?<TargetImage>[^<]+)"
+| rex field=_raw "Name='SourceUser'>(?<SourceUser>[^<]+)"
+| rex field=_raw "Name='GrantedAccess'>(?<GrantedAccess>[^<]+)"
+| search TargetImage="*lsass.exe"
+| eval SourceImage=lower(SourceImage)
+| where NOT like(SourceImage,"%\\svchost.exe")
+| where NOT like(SourceImage,"%\\msmpeng.exe")
+| where NOT like(SourceImage,"%\\microsoftedgeupdate.exe")
+| eval Risk=case(
+    like(SourceImage,"%\\powershell.exe"),"HIGH",
+    like(SourceImage,"%\\cmd.exe"),"HIGH",
+    like(SourceImage,"%\\rundll32.exe"),"HIGH",
+    like(SourceImage,"%\\procdump%"),"CRITICAL",
+    like(SourceImage,"%\\mimikatz%"),"CRITICAL",
+    true(),"MEDIUM"
+)
+| table _time host SourceUser SourceImage TargetImage GrantedAccess Risk
+| sort - _time

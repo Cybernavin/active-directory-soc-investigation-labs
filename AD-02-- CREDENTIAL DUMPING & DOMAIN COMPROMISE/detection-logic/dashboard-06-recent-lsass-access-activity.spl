@@ -1,0 +1,10 @@
+index=main host=SOC-LAB-1 EventCode=10
+| rex field=_raw "Name='SourceImage'>(?<SourceImage>[^<]+)"
+| rex field=_raw "Name='TargetImage'>(?<TargetImage>[^<]+)"
+| rex field=_raw "Name='SourceUser'>(?<SourceUser>[^<]+)"
+| rex field=_raw "Name='GrantedAccess'>(?<GrantedAccess>[^<]+)"
+| search TargetImage="*lsass.exe"
+| eval SourceProcess=replace(SourceImage,"^.*\\\\","")
+| eval TargetProcess=replace(TargetImage,"^.*\\\\","")
+| table _time SourceUser SourceProcess TargetProcess GrantedAccess
+| sort - _time

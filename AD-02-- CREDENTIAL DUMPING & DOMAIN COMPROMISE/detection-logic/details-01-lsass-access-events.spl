@@ -1,0 +1,9 @@
+index=main EventCode=10
+| rex field=_raw "Name='SourceImage'>(?<SourceImage>[^<]+)"
+| rex field=_raw "Name='TargetImage'>(?<TargetImage>[^<]+)"
+| rex field=_raw "Name='SourceUser'>(?<SourceUser>[^<]+)"
+| rex field=_raw "Name='TargetUser'>(?<TargetUser>[^<]+)"
+| rex field=_raw "Name='GrantedAccess'>(?<GrantedAccess>[^<]+)"
+| search TargetImage="*lsass.exe"
+| table _time host SourceUser SourceImage TargetImage GrantedAccess TargetUser
+| sort - _time

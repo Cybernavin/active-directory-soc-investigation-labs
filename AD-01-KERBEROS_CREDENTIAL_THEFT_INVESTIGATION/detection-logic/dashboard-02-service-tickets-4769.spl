@@ -1,0 +1,10 @@
+# Dashboard KPI: Service Tickets (4769)
+index=AD-DC-01 host=DC01 EventCode=4769
+| rex field=_raw "Data Name='TargetUserName'>(?<TargetUserName>[^<]+)"
+| rex field=_raw "Data Name='ServiceName'>(?<ServiceName>[^<]+)"
+| rex field=_raw "Data Name='IpAddress'>(?<IpAddress>[^<]+)"
+| where isnotnull(TargetUserName) AND isnotnull(ServiceName)
+| where NOT like(TargetUserName,"%$$@CORP.LOCAL")
+| where IpAddress!="::1" AND ServiceName!="krbtgt"
+| where NOT like(ServiceName,"%$$")
+| stats count
